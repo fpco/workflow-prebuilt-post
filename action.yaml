@@ -1,0 +1,25 @@
+name: "workflow-prebuilt-post"
+description: "Upload prebuilt tool file if does not exist"
+inputs:
+  file-path:
+    description: "Path to put the tool file. The basename is also the prefix of the artifact."
+    required: true
+  workflow-prebuilt-main-outputs-prebuilt:
+    description: "Prebuilt output from former workflow-prebuilt-main action."
+    required: true
+  workflow-prebuilt-main-outputs-sha:
+    description: "Sha output from former workflow-prebuilt-main action."
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - id: prepare-values
+      shell: bash
+      run: |
+        filepath="${{ inputs.file-path }}"
+        echo "tool_filename=${fielpath##*/}-${{ inputs.workflow-prebuilt-main-outputs-sha }}" >> $GITHUB_OUTPUT
+    - uses: actions/upload-artifact@v2
+      if: ${{ inputs.workflow-prebuilt-main-outputs-prebuilt == 'false' }}
+      with:
+        name: "${{ steps.prepare-values.outputs.tool_filename }}"
+        path: "${{ inputs.file-path }}"
